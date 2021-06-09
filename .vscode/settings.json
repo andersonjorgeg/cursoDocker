@@ -1,9 +1,11 @@
 {
     "cSpell.words": [
+        "blpop",
         "dbname",
         "httpd",
         "mydb",
         "psycopg",
-        "registrada"
+        "registrada",
+        "rpush"
     ]
 }

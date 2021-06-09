@@ -9,7 +9,7 @@ volumes:
 networks: 
     banco:
     web:
-
+    fila: 
 #criando os serviços
 services: 
     #serviço bando de dados
@@ -28,7 +28,7 @@ services:
             # mapeando o script de inicialização do db
             - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
 
-            #determina que a rede banco pertence somente ao db
+        #determina que a rede banco pertence somente ao db
         networks: 
             - banco
     #serviço frontend
@@ -50,7 +50,7 @@ services:
             - app
     #serviço app
     app:
-        image: python:3.6
+        image: python:3.7
         volumes: 
         #mapeando a aplicação 
             - ./app:/app
@@ -59,12 +59,34 @@ services:
         #definindo o comando que quer executar
         command: bash ./app.sh
     
-        #determina que a rede app pertence a rede banco e a rede web
+        #determina que a rede app tem acesso a rede banco, web e fila
         networks: 
             - banco
             - web
+            - fila
         #depende do serviço db
         depends_on: 
             - db
+            - queue
+        environment: 
+            - DB_NAME=abc_sender
+    queue:
+        image: redis:3.2
+        networks: 
+            - fila
+    #criando serviço relativo ao worker
+    worker:
+        build: worker 
+        environment: 
+            - PYTHONUNBUFFERED=1
+        volumes: 
+            #worker
+            - ./worker:/worker
+        working_dir: /worker
+        command: worker.py
+        networks: 
+            - fila
+        depends_on: 
+            - queue
 
     
